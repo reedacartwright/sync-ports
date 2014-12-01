@@ -45,4 +45,5 @@ if expr "$REV" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
 	svnlite up -r "${REV}" "${PORTSDIR}"
 else
 	>& echo "ERROR: Unable to determine revision number for latest packages."
+	exit 1
 fi
