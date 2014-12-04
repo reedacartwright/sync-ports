@@ -1,9 +1,12 @@
 #!/bin/sh
 # Copyright (c) 2014 Reed A. Cartwright <cartwright@asu.edu>
-
-# USAGE: sync_local_ports.sh [name or abs_path]
+#
 # This script determines the revision number used to build FreeBSD packages
 # and syncs a local ports directory to match it. 
+#
+# USAGE: sync_local_ports.sh [name or abs_path]
+#
+# REQUIREMENTS: textproc/jq, ports-mgmt/poudriere
 
 SERVER=beefy2.isc.freebsd.org
 JAIL=10amd64-default
@@ -18,7 +21,7 @@ if [ -z "$PORTSTREE" ]; then
 fi
 
 # If the argument is not an absolute path, use poudriere to resolve it.
-# We test for absolute path by see if it begins with a slash.
+# We test for absolute path by seeing if it begins with a slash.
 if [ "${PORTSTREE#/}" != "${PORTSTREE}" ]; then
 	PORTSDIR="${PORTSTREE}"
 else
