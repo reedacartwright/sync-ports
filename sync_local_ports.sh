@@ -35,7 +35,8 @@ if [ "${PORTSTREE#/}" != "${PORTSTREE}" ]; then
 elif which poudriere >/dev/null; then
 	PORTSDIR=`poudriere ports -ql | awk -v PT="${PORTSTREE}" '$1 == PT { print $3 }'`
 else
-	PORTSDIR="/usr/ports"
+	PORTSTREE="/usr/ports"
+	PORTSDIR="${PORTSTREE}"
 fi
 
 # Check if the directory exists
