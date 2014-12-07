@@ -15,11 +15,11 @@ amd64) : ${SERVER:=beefy2.isc.freebsd.org} ;;
 esac
 
 case `uname -r` in
-*CURRENT) : ${JAIL:=head-} ;;
-*) : ${JAIL:=`uname -r | cut -d. -f1`} ;;
+*CURRENT) : ${JAIL:=head-`uname -m`-default} ;;
+*) : ${JAIL:=`uname -r | cut -d. -f1``uname -m`-default} ;;
 esac
 
-URL="http://${SERVER}/data/${JAIL}`uname -m`-default/.data.json"
+URL="http://${SERVER}/data/${JAIL}/.data.json"
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
