@@ -50,7 +50,7 @@ if expr "$REV" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
 	echo "====>> Updating ports tree '${PORTSTREE}' to revision ${REV}"
 	CURREV=`svnlite info "${PORTSDIR}" | grep -e '^Revision:' | sed -e 's|Revision: ||'`
 	if [ "${CURREV}" -ne "${REV}" ]; then
-		svnlite up -r "${REV}" "${PORTSDIR}"
+		svnlite up -q -r "${REV}" "${PORTSDIR}"
 	fi
 else
 	>& echo "ERROR: Unable to determine revision number for latest packages."
