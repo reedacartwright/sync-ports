@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2014 Reed A. Cartwright <cartwright@asu.edu>
+# Copyright (c) 2014-2015 Reed A. Cartwright <cartwright@asu.edu>
 # Copyright (c) 2014 Alberto Villa <avilla@FreeBSD.org>
 #
 # This script determines the revision number used to build FreeBSD packages
@@ -8,20 +8,33 @@
 # USAGE: sync_local_ports.sh [name or abs_path]
 #
 # REQUIREMENTS: textproc/jq, ports-mgmt/poudriere (optional)
+#
+# If the argument is not an absolute path, the script will treat it as
+# the name of a poudriere-managed ports directory.  If poudriere is
+# not installed, it will use /usr/ports as the ports directory.
+#
+# If the argument is not specified it defaults to "default",
+#
+# The script uses uname to choose which pkg jail to sync with.
+# You can specify PKG_SERVER and PKG_JAIL in the environment to
+# override the default options.
 
-case `uname -m` in
-i386) : ${SERVER:=beefy1.isc.freebsd.org} ;;
-amd64) : ${SERVER:=beefy2.isc.freebsd.org} ;;
-esac
-
-case `uname -r` in
-*CURRENT) : ${JAIL:=head-`uname -m`-default} ;;
-*) : ${JAIL:=`uname -r | cut -d. -f1``uname -m`-default} ;;
-esac
-
-URL="http://${SERVER}/data/${JAIL}/.data.json"
-
+# Set the path
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+
+# Determine PKG_SERVER
+case `uname -m` in
+i386) : ${PKG_SERVER:=beefy1.isc.freebsd.org} ;;
+amd64) : ${PKG_SERVER:=beefy2.isc.freebsd.org} ;;
+esac
+
+# Determine PKG_JAIL
+case `uname -r` in
+*CURRENT) : ${PKG_JAIL:=head-`uname -m`-default} ;;
+*) : ${PKG_JAIL:=`uname -r | cut -d. -f1``uname -m`-default} ;;
+esac
+
+URL="http://${PKG_SERVER}/data/${PKG_JAIL}/.data.json"
 
 PORTSTREE=$1
 if [ -z "$PORTSTREE" ]; then
@@ -52,7 +65,7 @@ if [ $? -gt 0 ]; then
 	exit 1
 fi
 
-# Parse Revision information from server
+# Parse revision information from server
 REV=`echo "${JSON}" | jq -r '.builds[.builds.latest].svn_url | split("@")[1]'`
 
 # Check revision information
