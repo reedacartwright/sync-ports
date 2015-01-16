@@ -1,15 +1,23 @@
 #!/bin/sh
 # Copyright (c) 2014 Reed A. Cartwright <cartwright@asu.edu>
+# Copyright (c) 2014 Alberto Villa <avilla@FreeBSD.org>
 #
 # This script determines the revision number used to build FreeBSD packages
 # and syncs a local ports directory to match it. 
 #
 # USAGE: sync_local_ports.sh [name or abs_path]
 #
-# REQUIREMENTS: textproc/jq, ports-mgmt/poudriere
+# REQUIREMENTS: textproc/jq, ports-mgmt/poudriere (optional)
 
-SERVER=beefy2.isc.freebsd.org
-JAIL=10amd64-default
+case `uname -m` in
+i386) : ${SERVER:=beefy1.isc.freebsd.org} ;;
+amd64) : ${SERVER:=beefy2.isc.freebsd.org} ;;
+esac
+
+case `uname -r` in
+*CURRENT) : ${JAIL:=head-`uname -m`-default} ;;
+*) : ${JAIL:=`uname -r | cut -d. -f1``uname -m`-default} ;;
+esac
 
 URL="http://${SERVER}/data/${JAIL}/.data.json"
 
@@ -24,8 +32,11 @@ fi
 # We test for absolute path by seeing if it begins with a slash.
 if [ "${PORTSTREE#/}" != "${PORTSTREE}" ]; then
 	PORTSDIR="${PORTSTREE}"
-else
+elif which poudriere >/dev/null; then
 	PORTSDIR=`poudriere ports -ql | awk -v PT="${PORTSTREE}" '$1 == PT { print $3 }'`
+else
+	PORTSTREE="/usr/ports"
+	PORTSDIR="${PORTSTREE}"
 fi
 
 # Check if the directory exists
