@@ -31,7 +31,7 @@ esac
 # Determine PKG_JAIL
 case `uname -r` in
 *CURRENT) : ${PKG_JAIL:=head-`uname -m`-default} ;;
-*) : ${PKG_JAIL:=`uname -r | cut -d. -f1``uname -m`-default} ;;
+*) : ${PKG_JAIL:=`uname -r | cut -d- -f1 | tr -d .``uname -m`-default} ;;
 esac
 
 URL="http://${PKG_SERVER}/data/${PKG_JAIL}/.data.json"
