@@ -17,8 +17,8 @@
 # If the argument is not specified, it defaults to "default".
 #
 # The script uses uname to choose which pkg jail to sync with.
-# You can specify PKG_SERVER and PKG_JAIL in the environment to
-# override the default options.
+# You can specify PKG_SERVER, PKG_JAIL, and/or PKG_URL in the
+# environment to override the default options.
 
 # Set the path
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
@@ -50,8 +50,10 @@ if [ -z "${PKG_SERVER}" ]; then
 	esac
 fi
 
-URL="http://${PKG_SERVER}/data/${PKG_JAIL}/.data.json"
-PORTSTREE=$1
+# Build PKG_URL
+: ${PKG_URL:=http://${PKG_SERVER}/data/${PKG_JAIL}/.data.json}
+
+PORTSTREE="$1"
 if [ -z "${PORTSTREE}" ]; then
     PORTSTREE="default"
 fi
@@ -74,7 +76,7 @@ if [ ! -d "${PORTSDIR}" ]; then
 fi
 
 # Fetch data from server
-JSON=`fetch -qo - "${URL}"`
+JSON=`fetch -qo - "${PKG_URL}"`
 if [ $? -gt 0 ]; then
 	>&2 echo "ERROR: Unable to fetch data from package server."
 	exit 1
