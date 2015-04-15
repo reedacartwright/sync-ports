@@ -32,19 +32,19 @@ esac
 # Determine PKG_SERVER
 if [ -z "${PKG_SERVER}" ]; then
 	case "${PKG_JAIL}" in
-	93i386-default)     : PKG_SERVER=beefy1.isc.freebsd.org ;;
-	101i386-quarterly)  : PKG_SERVER=beefy1.isc.freebsd.org ;;
-	93amd64-default)    : PKG_SERVER=beefy2.isc.freebsd.org ;;
-	101amd64-quarterly) : PKG_SERVER=beefy2.isc.freebsd.org ;;
-	head-i386-default)  : PKG_SERVER=beefy3.isc.freebsd.org ;;
-	93i386-quarterly)   : PKG_SERVER=beefy3.isc.freebsd.org ;;
-	head-amd64-default) : PKG_SERVER=beefy4.isc.freebsd.org ;;
-	93amd64-quarterly)  : PKG_SERVER=beefy4.isc.freebsd.org ;;
-	101i386-default)    : PKG_SERVER=beefy5.nyi.freebsd.org ;;
-	84i386-default)     : PKG_SERVER=beefy5.nyi.freebsd.org ;;
-	101amd64-default)   : PKG_SERVER=beefy6.nyi.freebsd.org ;;
-	84amd64-default)    : PKG_SERVER=beefy6.nyi.freebsd.org ;;
-	*)	echo "ERROR: Unable to determine package server for ${PKG_JAIL}."
+	93i386-default)     PKG_SERVER=beefy1.isc.freebsd.org ;;
+	101i386-quarterly)  PKG_SERVER=beefy1.isc.freebsd.org ;;
+	93amd64-default)    PKG_SERVER=beefy2.isc.freebsd.org ;;
+	101amd64-quarterly) PKG_SERVER=beefy2.isc.freebsd.org ;;
+	head-i386-default)  PKG_SERVER=beefy3.isc.freebsd.org ;;
+	93i386-quarterly)   PKG_SERVER=beefy3.isc.freebsd.org ;;
+	head-amd64-default) PKG_SERVER=beefy4.isc.freebsd.org ;;
+	93amd64-quarterly)  PKG_SERVER=beefy4.isc.freebsd.org ;;
+	101i386-default)    PKG_SERVER=beefy5.nyi.freebsd.org ;;
+	84i386-default)     PKG_SERVER=beefy5.nyi.freebsd.org ;;
+	101amd64-default)   PKG_SERVER=beefy6.nyi.freebsd.org ;;
+	84amd64-default)    PKG_SERVER=beefy6.nyi.freebsd.org ;;
+	*)	>&2 echo "ERROR: Unable to determine package server for ${PKG_JAIL}."
 		exit 1
 		;;
 	esac
@@ -81,7 +81,7 @@ if [ $? -gt 0 ]; then
 fi
 
 # Parse revision information from server
-REV=`echo "${JSON}" | jq -r '.builds[.builds.latest].svn_url | split("@")[1]'`
+REV=`printf %s "${JSON}" | jq -r '.builds[.builds.latest].svn_url | split("@")[1]'`
 
 # Check revision information
 if expr "${REV}" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
@@ -91,7 +91,7 @@ if expr "${REV}" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
 		echo "====>> Updating ports tree '${PORTSTREE}' from revision ${CURREV} to ${REV}"
 		svnlite up -q -r "${REV}" "${PORTSDIR}"
 	else
-		echo "====>> Your ports tree is up to date at revision ${CURREV}"
+		echo "====>> Ports tree '${PORTSTREE}' is up to date at revision ${CURREV}"
 	fi
 	exit
 else
