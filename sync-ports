@@ -4,7 +4,7 @@
 # Copyright (c) 2015 Mike Clarke <jmc-freebsd2@milibyte.co.uk>
 #
 # This script determines the revision number used to build FreeBSD packages
-# and syncs a local ports directory to match it. 
+# and syncs a local ports directory to match it.
 #
 # USAGE: sync-ports [name or abs_path]
 #
@@ -53,13 +53,9 @@ fi
 # Build PKG_URL
 : ${PKG_URL:=http://${PKG_SERVER}/data/${PKG_JAIL}/.data.json}
 
-PORTSTREE="$1"
-if [ -z "${PORTSTREE}" ]; then
-    PORTSTREE="default"
-fi
-
 # If the argument is not an absolute path, use poudriere to resolve it.
 # We test for absolute path by seeing if it begins with a slash.
+PORTSTREE="${1:-default}"
 if [ "${PORTSTREE#/}" != "${PORTSTREE}" ]; then
 	PORTSDIR="${PORTSTREE}"
 elif which poudriere >/dev/null 2>&1 ; then
