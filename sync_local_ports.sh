@@ -26,28 +26,29 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 # Determine PKG_JAIL
 case `uname -r` in
 *CURRENT) : ${PKG_JAIL:=head-`uname -m`-default} ;;
-*) : ${PKG_JAIL:=`uname -r | cut -d- -f1 | tr -d .``uname -m`-default} ;;
+*)        : ${PKG_JAIL:=`uname -r | cut -d- -f1 | tr -d .``uname -m`-default} ;;
 esac
 
 # Determine PKG_SERVER
-case ${PKG_JAIL} in
-93i386-default) : ${PKG_SERVER:=beefy1.isc.freebsd.org} ;;
-101i386-quarterly) : ${PKG_SERVER:=beefy1.isc.freebsd.org} ;;
-93amd64-default) : ${PKG_SERVER:=beefy2.isc.freebsd.org} ;;
-101amd64-quarterly) : ${PKG_SERVER:=beefy2.isc.freebsd.org} ;;
-head-i386-default) : ${PKG_SERVER:=beefy3.isc.freebsd.org} ;;
-93i386-quarterly) : ${PKG_SERVER:=beefy3.isc.freebsd.org} ;;
-head-amd64-default) : ${PKG_SERVER:=beefy4.isc.freebsd.org} ;;
-93amd64-quarterly) : ${PKG_SERVER:=beefy4.isc.freebsd.org} ;;
-101i386-default) : ${PKG_SERVER:=beefy5.nyi.freebsd.org} ;;
-84i386-default) : ${PKG_SERVER:=beefy5.nyi.freebsd.org} ;;
-101amd64-default) : ${PKG_SERVER:=beefy6.nyi.freebsd.org} ;;
-84amd64-default) : ${PKG_SERVER:=beefy6.nyi.freebsd.org} ;;
-*)
-echo "ERROR: Unable to determine package server"
-exit 1
-;;
-esac
+if [ -z "$PKG_SERVER" ]; then
+	case ${PKG_JAIL} in
+	93i386-default)     : PKG_SERVER=beefy1.isc.freebsd.org ;;
+	101i386-quarterly)  : PKG_SERVER=beefy1.isc.freebsd.org ;;
+	93amd64-default)    : PKG_SERVER=beefy2.isc.freebsd.org ;;
+	101amd64-quarterly) : PKG_SERVER=beefy2.isc.freebsd.org ;;
+	head-i386-default)  : PKG_SERVER=beefy3.isc.freebsd.org ;;
+	93i386-quarterly)   : PKG_SERVER=beefy3.isc.freebsd.org ;;
+	head-amd64-default) : PKG_SERVER=beefy4.isc.freebsd.org ;;
+	93amd64-quarterly)  : PKG_SERVER=beefy4.isc.freebsd.org ;;
+	101i386-default)    : PKG_SERVER=beefy5.nyi.freebsd.org ;;
+	84i386-default)     : PKG_SERVER=beefy5.nyi.freebsd.org ;;
+	101amd64-default)   : PKG_SERVER=beefy6.nyi.freebsd.org ;;
+	84amd64-default)    : PKG_SERVER=beefy6.nyi.freebsd.org ;;
+	*)	echo "ERROR: Unable to determine package server for ${PKG_JAIL}."
+		exit 1
+		;;
+	esac
+fi
 
 URL="http://${PKG_SERVER}/data/${PKG_JAIL}/.data.json"
 PORTSTREE=$1
@@ -59,7 +60,7 @@ fi
 # We test for absolute path by seeing if it begins with a slash.
 if [ "${PORTSTREE#/}" != "${PORTSTREE}" ]; then
 	PORTSDIR="${PORTSTREE}"
-elif which poudriere >/dev/null; then
+elif which poudriere >/dev/null 2>&1 ; then
 	PORTSDIR=`poudriere ports -ql | awk -v PT="${PORTSTREE}" '$1 == PT { print $3 }'`
 else
 	PORTSTREE="/usr/ports"
