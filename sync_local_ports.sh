@@ -1,6 +1,7 @@
 #!/bin/sh
 # Copyright (c) 2014-2015 Reed A. Cartwright <cartwright@asu.edu>
 # Copyright (c) 2014 Alberto Villa <avilla@FreeBSD.org>
+# Copyright (c) 2015 Mike Clarke <jmc-freebsd2@milibyte.co.uk>
 #
 # This script determines the revision number used to build FreeBSD packages
 # and syncs a local ports directory to match it. 
@@ -22,20 +23,33 @@
 # Set the path
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
-# Determine PKG_SERVER
-case `uname -m` in
-i386) : ${PKG_SERVER:=beefy1.isc.freebsd.org} ;;
-amd64) : ${PKG_SERVER:=beefy2.isc.freebsd.org} ;;
-esac
-
 # Determine PKG_JAIL
 case `uname -r` in
 *CURRENT) : ${PKG_JAIL:=head-`uname -m`-default} ;;
 *) : ${PKG_JAIL:=`uname -r | cut -d- -f1 | tr -d .``uname -m`-default} ;;
 esac
 
-URL="http://${PKG_SERVER}/data/${PKG_JAIL}/.data.json"
+# Determine PKG_SERVER
+case ${PKG_JAIL} in
+93i386-default) : ${PKG_SERVER:=beefy1.isc.freebsd.org} ;;
+101i386-quarterly) : ${PKG_SERVER:=beefy1.isc.freebsd.org} ;;
+93amd64-default) : ${PKG_SERVER:=beefy2.isc.freebsd.org} ;;
+101amd64-quarterly) : ${PKG_SERVER:=beefy2.isc.freebsd.org} ;;
+head-i386-default) : ${PKG_SERVER:=beefy3.isc.freebsd.org} ;;
+93i386-quarterly) : ${PKG_SERVER:=beefy3.isc.freebsd.org} ;;
+head-amd64-default) : ${PKG_SERVER:=beefy4.isc.freebsd.org} ;;
+93amd64-quarterly) : ${PKG_SERVER:=beefy4.isc.freebsd.org} ;;
+101i386-default) : ${PKG_SERVER:=beefy5.nyi.freebsd.org} ;;
+84i386-default) : ${PKG_SERVER:=beefy5.nyi.freebsd.org} ;;
+101amd64-default) : ${PKG_SERVER:=beefy6.nyi.freebsd.org} ;;
+84amd64-default) : ${PKG_SERVER:=beefy6.nyi.freebsd.org} ;;
+*)
+echo "ERROR: Unable to determine package server"
+exit 1
+;;
+esac
 
+URL="http://${PKG_SERVER}/data/${PKG_JAIL}/.data.json"
 PORTSTREE=$1
 if [ -z "$PORTSTREE" ]; then
     PORTSTREE="default"
@@ -71,11 +85,14 @@ REV=`echo "${JSON}" | jq -r '.builds[.builds.latest].svn_url | split("@")[1]'`
 # Check revision information
 if expr "$REV" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
 	# Skip update if revisions are in sync
-	echo "====>> Updating ports tree '${PORTSTREE}' to revision ${REV}"
 	CURREV=`svnlite info "${PORTSDIR}" | grep -e '^Revision:' | sed -e 's|Revision: ||'`
 	if [ "${CURREV}" -ne "${REV}" ]; then
+		echo "====>> Updating ports tree '${PORTSTREE}' from revision ${CURREV} to ${REV}"
 		svnlite up -q -r "${REV}" "${PORTSDIR}"
+	else
+		echo "====>> Your ports tree is up to date at revision ${CURREV}"
 	fi
+	exit
 else
 	>& echo "ERROR: Unable to determine revision number for latest packages."
 	exit 1
