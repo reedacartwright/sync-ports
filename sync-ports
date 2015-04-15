@@ -6,7 +6,7 @@
 # This script determines the revision number used to build FreeBSD packages
 # and syncs a local ports directory to match it. 
 #
-# USAGE: sync_local_ports.sh [name or abs_path]
+# USAGE: sync-ports [name or abs_path]
 #
 # REQUIREMENTS: textproc/jq, ports-mgmt/poudriere (optional)
 #
@@ -14,7 +14,7 @@
 # the name of a poudriere-managed ports directory.  If poudriere is
 # not installed, it will use /usr/ports as the ports directory.
 #
-# If the argument is not specified it defaults to "default",
+# If the argument is not specified, it defaults to "default".
 #
 # The script uses uname to choose which pkg jail to sync with.
 # You can specify PKG_SERVER and PKG_JAIL in the environment to
