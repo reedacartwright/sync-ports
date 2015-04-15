@@ -73,7 +73,7 @@ fi
 
 # Fetch data from server
 JSON=`fetch -qo - "${PKG_URL}"`
-if [ $? -gt 0 ]; then
+if [ $? -ne 0 ]; then
 	>&2 echo "ERROR: Unable to fetch data from package server."
 	exit 1
 fi
@@ -85,6 +85,10 @@ REV=`printf %s "${JSON}" | jq -r '.builds[.builds.latest].svn_url | split("@")[1
 if expr "${REV}" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
 	# Skip update if revisions are in sync
 	CURREV=`svnlite info "${PORTSDIR}" | awk -F': ' '$1 == "Revision" {print $2; exit}'`
+	if [ -z "${CURREV}" ]; then
+		>&2 echo "ERROR: Unable to get current revision for ports tree '${PORTSTREE}'."
+		exit 1
+	fi
 	if [ "${CURREV}" -ne "${REV}" ]; then
 		echo "====>> Updating ports tree '${PORTSTREE}' from revision ${CURREV} to ${REV}"
 		svnlite up -q -r "${REV}" "${PORTSDIR}"
