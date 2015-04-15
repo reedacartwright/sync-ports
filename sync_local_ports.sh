@@ -30,8 +30,8 @@ case `uname -r` in
 esac
 
 # Determine PKG_SERVER
-if [ -z "$PKG_SERVER" ]; then
-	case ${PKG_JAIL} in
+if [ -z "${PKG_SERVER}" ]; then
+	case "${PKG_JAIL}" in
 	93i386-default)     : PKG_SERVER=beefy1.isc.freebsd.org ;;
 	101i386-quarterly)  : PKG_SERVER=beefy1.isc.freebsd.org ;;
 	93amd64-default)    : PKG_SERVER=beefy2.isc.freebsd.org ;;
@@ -52,7 +52,7 @@ fi
 
 URL="http://${PKG_SERVER}/data/${PKG_JAIL}/.data.json"
 PORTSTREE=$1
-if [ -z "$PORTSTREE" ]; then
+if [ -z "${PORTSTREE}" ]; then
     PORTSTREE="default"
 fi
 
@@ -74,7 +74,7 @@ if [ ! -d "${PORTSDIR}" ]; then
 fi
 
 # Fetch data from server
-JSON=`fetch -qo - $URL`
+JSON=`fetch -qo - "${URL}"`
 if [ $? -gt 0 ]; then
 	>&2 echo "ERROR: Unable to fetch data from package server."
 	exit 1
@@ -84,7 +84,7 @@ fi
 REV=`echo "${JSON}" | jq -r '.builds[.builds.latest].svn_url | split("@")[1]'`
 
 # Check revision information
-if expr "$REV" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
+if expr "${REV}" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
 	# Skip update if revisions are in sync
 	CURREV=`svnlite info "${PORTSDIR}" | grep -e '^Revision:' | sed -e 's|Revision: ||'`
 	if [ "${CURREV}" -ne "${REV}" ]; then
