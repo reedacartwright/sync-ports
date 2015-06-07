@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (c) 2014-2015 Reed A. Cartwright <cartwright@asu.edu>
-# Copyright (c) 2014 Alberto Villa <avilla@FreeBSD.org>
+# Copyright (c) 2014-2015 Alberto Villa <avilla@FreeBSD.org>
 # Copyright (c) 2015 Mike Clarke <jmc-freebsd2@milibyte.co.uk>
 #
 # This script determines the revision number used to build FreeBSD packages
@@ -78,8 +78,10 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-# Parse revision information from server
-REV=`printf %s "${JSON}" | jq -r '.builds[.builds.latest].svn_url | split("@")[1]'`
+# Parse revision information from server (exclude incomplete builds)
+REV=`printf %s "${JSON}" | jq -c '.builds[]' |
+	awk '/status":"stopped[^"]+done/ { build = $0 }; END { print build }' |
+	jq -r '.svn_url | split("@")[1]'`
 
 # Check revision information
 if expr "${REV}" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
