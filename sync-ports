@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (c) 2014-2016 Reed A. Cartwright <reed@cartwrig.ht>
-# Copyright (c) 2014-2015 Alberto Villa <avilla@FreeBSD.org>
+# Copyright (c) 2014-2017 Alberto Villa <avilla@FreeBSD.org>
 # Copyright (c) 2015 Mike Clarke <jmc-freebsd2@milibyte.co.uk>
 #
 # This script determines the revision number used to build FreeBSD packages
@@ -26,31 +26,36 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 # Determine PKG_JAIL
 case `uname -r` in
 *CURRENT) : ${PKG_JAIL:=head-`uname -m`-default} ;;
-10.*)     : ${PKG_JAIL:=101`uname -m`-default} ;;
-9.*)      : ${PKG_JAIL:=93`uname -m`-default} ;;
-8.*)      : ${PKG_JAIL:=84`uname -m`-default} ;;
+10.*)     : ${PKG_JAIL:=103`uname -m`-default} ;;
 *)        : ${PKG_JAIL:=`uname -r | cut -d- -f1 | tr -d .``uname -m`-default} ;;
 esac
 
 # Determine PKG_SERVER
 if [ -z "${PKG_URL}" -a -z "${PKG_SERVER}" ]; then
 	case "${PKG_JAIL}" in
-	93i386-default)     PKG_SERVER=beefy1.isc.freebsd.org ;;
-	101i386-quarterly)  PKG_SERVER=beefy1.isc.freebsd.org ;;
-	93amd64-default)    PKG_SERVER=beefy2.isc.freebsd.org ;;
-	101amd64-quarterly) PKG_SERVER=beefy2.isc.freebsd.org ;;
-	head-i386-default)  PKG_SERVER=beefy3.isc.freebsd.org ;;
-	93i386-quarterly)   PKG_SERVER=beefy3.isc.freebsd.org ;;
-	head-amd64-default) PKG_SERVER=beefy4.isc.freebsd.org ;;
-	93amd64-quarterly)  PKG_SERVER=beefy4.isc.freebsd.org ;;
-	101i386-default)    PKG_SERVER=beefy5.nyi.freebsd.org ;;
-	84i386-default)     PKG_SERVER=beefy5.nyi.freebsd.org ;;
-	101amd64-default)   PKG_SERVER=beefy6.nyi.freebsd.org ;;
-	84amd64-default)    PKG_SERVER=beefy6.nyi.freebsd.org ;;
+	103i386-quarterly)	PKG_SERVER=beefy4 ;;
+	103i386-default)	PKG_SERVER=beefy5 ;;
+	103amd64-quarterly)	PKG_SERVER=beefy2 ;;
+	103amd64-default)	PKG_SERVER=beefy6 ;;
+	110i386-quarterly)	PKG_SERVER=beefy1 ;;
+	110i386-default)	PKG_SERVER=beefy10 ;;
+	110amd64-quarterly)	PKG_SERVER=beefy3 ;;
+	110amd64-default)	PKG_SERVER=beefy9 ;;
+	110armv6-quarterly)	PKG_SERVER=beefy15 ;;
+	110arm64-quarterly)	PKG_SERVER=thunderx1 ;;
+	110arm64-default)	PKG_SERVER=thunderx1 ;;
+	110mips-quarterly)	PKG_SERVER=beefy14 ;;
+	110mips64-quarterly)	PKG_SERVER=beefy16 ;;
+	head-i386-default)	PKG_SERVER=beefy11 ;;
+	head-amd64-default)	PKG_SERVER=beefy12 ;;
+	head-armv6-default)	PKG_SERVER=beefy8 ;;
+	head-mips-default)	PKG_SERVER=beefy7 ;;
+	head-mips64-default)	PKG_SERVER=beefy13 ;;
 	*)	>&2 echo "[sync-ports] ERROR: Unable to determine package server for ${PKG_JAIL}."
 		exit 1
 		;;
 	esac
+	PKG_SERVER="${PKG_SERVER}.nyi.freebsd.org"
 fi
 
 # Build PKG_URL
@@ -81,8 +86,9 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-# Parse revision information from server (exclude incomplete builds)
-REV=`printf %s "${JSON}" | jq -r '[.builds[] | select(.status? == "stopped:done:") | .buildname] | max'`
+# Parse revision information from server (exclude incomplete builds
+# and strip src revision from head builds)
+REV=`printf %s "${JSON}" | jq -r '[.builds[] | select(.status? == "stopped:done:") | .buildname | split("_")[0] | ltrimstr("p")] | max'`
 
 # Check revision information
 if expr "${REV}" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
