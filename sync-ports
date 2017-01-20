@@ -86,8 +86,9 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-# Parse revision information from server (exclude incomplete builds)
-REV=`printf %s "${JSON}" | jq -r '[.builds[] | select(.status? == "stopped:done:") | .buildname] | max'`
+# Parse revision information from server (exclude incomplete builds
+# and strip src revision from head builds)
+REV=`printf %s "${JSON}" | jq -r '[.builds[] | select(.status? == "stopped:done:") | .buildname | split("_")[0] | ltrimstr("p")] | max'`
 
 # Check revision information
 if expr "${REV}" : '^[[:digit:]][[:digit:]]*$' >/dev/null; then
